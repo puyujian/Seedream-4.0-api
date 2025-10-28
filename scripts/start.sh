@@ -5,6 +5,16 @@ set -e
 echo "🚀 Starting Volcengine Image Generator"
 echo "======================================"
 
+# Detect docker compose command
+if command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null; then
+    COMPOSE_CMD="docker compose"
+else
+    echo "❌ docker compose is not available. Please install Docker Compose and try again."
+    exit 1
+fi
+
 # Check if .env exists
 if [ ! -f .env ]; then
     echo "⚠️  .env file not found, creating from example..."
@@ -21,18 +31,18 @@ fi
 
 echo ""
 echo "📦 Building Docker images..."
-docker-compose build
+$COMPOSE_CMD build
 
 echo ""
 echo "🎬 Starting services..."
-docker-compose up -d
+$COMPOSE_CMD up -d
 
 echo ""
 echo "⏳ Waiting for services to be ready..."
 sleep 5
 
 # Check if services are running
-if docker-compose ps | grep -q "Up"; then
+if $COMPOSE_CMD ps | grep -q "Up"; then
     echo ""
     echo "✅ Application started successfully!"
     echo ""
@@ -41,10 +51,10 @@ if docker-compose ps | grep -q "Up"; then
     echo "   Backend API: http://localhost:8000"
     echo "   API Docs: http://localhost:8000/docs"
     echo ""
-    echo "📊 View logs with: docker-compose logs -f"
-    echo "🛑 Stop with: docker-compose down"
+    echo "📊 View logs with: $COMPOSE_CMD logs -f"
+    echo "🛑 Stop with: $COMPOSE_CMD down"
 else
     echo ""
     echo "❌ Some services failed to start. Check logs with:"
-    echo "   docker-compose logs"
+    echo "   $COMPOSE_CMD logs"
 fi

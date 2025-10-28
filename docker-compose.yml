@@ -1,23 +1,62 @@
-version: '3.9'
+# Docker Compose configuration for Volcengine Image Generator
+# For development mode, use: docker compose -f docker-compose.dev.yml up
 
 services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - PYTHON_VERSION=3.11
+    image: volcengine-backend:latest
     container_name: volcengine-backend
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./backend/app/data:/app/data
+      - backend-cache:/root/.cache
     ports:
       - "8000:8000"
+    networks:
+      - volcengine-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status == 200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build:
       context: .
       dockerfile: nginx/Dockerfile
+      args:
+        - NODE_VERSION=20
+        - NGINX_VERSION=1.27-alpine
+    image: volcengine-frontend:latest
     container_name: volcengine-frontend
+    restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "3000:80"
+    networks:
+      - volcengine-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  backend-cache:
+    driver: local
+
+networks:
+  volcengine-net:
+    driver: bridge
