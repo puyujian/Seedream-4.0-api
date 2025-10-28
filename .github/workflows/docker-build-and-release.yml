@@ -1,0 +1,272 @@
+name: Docker Build, Push and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # 触发条件：推送版本标签，如 v1.0.0
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}-backend
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}-frontend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag or input
+        id: get_version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Extract metadata for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+          tags: |
+            type=semver,pattern=v{{version}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern=v{{major}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.get_version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Extract metadata for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+          tags: |
+            type=semver,pattern=v{{version}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern=v{{major}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.get_version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            PYTHON_VERSION=3.11
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./nginx/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_VERSION=20
+            NGINX_VERSION=1.27-alpine
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat <<EOF > release_notes.md
+          ## 🎉 Volcengine 图像生成器 v${{ steps.get_version.outputs.version }}
+
+          ### 📦 Docker 镜像
+
+          本次发布包含以下 Docker 镜像：
+
+          #### 后端服务 (Backend)
+          ```bash
+          docker pull ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
+          ```
+
+          #### 前端服务 (Frontend + Nginx)
+          ```bash
+          docker pull ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
+          ```
+
+          ### 🚀 快速部署
+
+          1. 克隆仓库或下载 docker-compose.yml
+          2. 创建 .env 文件并配置火山引擎凭证（可选）
+          3. 更新 docker-compose.yml 中的镜像版本：
+          ```yaml
+          services:
+            backend:
+              image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
+            frontend:
+              image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
+          ```
+          4. 启动服务：
+          ```bash
+          docker-compose up -d
+          ```
+          5. 访问 http://localhost:3000
+
+          ### ✨ 主要特性
+
+          - 🖼️ **文生图**：根据文本提示词生成高质量图像
+          - 🎨 **图生图**：对现有图片进行 AI 转换和风格迁移
+          - 📚 **历史记录**：浏览和管理所有生成的图片
+          - 💎 **现代化界面**：基于 Vue 3 和 Element Plus 的响应式 UI
+          - 🐳 **容器化部署**：完整的 Docker 支持，开箱即用
+
+          ### 📋 系统要求
+
+          - Docker 20.10+
+          - Docker Compose 2.0+
+          - 火山引擎账号（Demo 模式可选）
+
+          ### 📖 文档
+
+          完整文档请查看：[README.md](https://github.com/${{ github.repository }}/blob/main/README.md)
+
+          ---
+          构建时间：$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          EOF
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update docker-compose.yml for release
+        run: |
+          cat > docker-compose.release.yml << EOF
+          # Docker Compose configuration for Volcengine Image Generator
+          # Release version: v${{ steps.get_version.outputs.version }}
+          # 
+          # Usage:
+          #   1. Copy this file to docker-compose.yml
+          #   2. Create .env file with your Volcengine credentials (optional)
+          #   3. Run: docker-compose up -d
+          
+          services:
+            backend:
+              image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
+              container_name: volcengine-backend
+              restart: unless-stopped
+              env_file:
+                - .env
+              environment:
+                - PYTHONUNBUFFERED=1
+              volumes:
+                - ./data:/app/data
+                - backend-cache:/root/.cache
+              ports:
+                - "8000:8000"
+              networks:
+                - volcengine-net
+              healthcheck:
+                test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status == 200 else 1)"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
+          
+            frontend:
+              image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
+              container_name: volcengine-frontend
+              restart: unless-stopped
+              depends_on:
+                backend:
+                  condition: service_healthy
+              ports:
+                - "3000:80"
+              networks:
+                - volcengine-net
+              healthcheck:
+                test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:80 || exit 1"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
+          
+          volumes:
+            backend-cache:
+              driver: local
+          
+          networks:
+            volcengine-net:
+              driver: bridge
+          EOF
+
+      - name: Upload docker-compose file to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          files: |
+            docker-compose.release.yml
+            .env.example
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## 🎉 发布成功！" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 镜像信息" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**版本**: v${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**后端镜像**:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**前端镜像**:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ steps.get_version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 链接" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [查看 Release](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.get_version.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [后端镜像](https://github.com/${{ github.repository }}/pkgs/container/${{ github.repository }}-backend)" >> $GITHUB_STEP_SUMMARY
+          echo "- [前端镜像](https://github.com/${{ github.repository }}/pkgs/container/${{ github.repository }}-frontend)" >> $GITHUB_STEP_SUMMARY
