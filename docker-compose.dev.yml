@@ -1,0 +1,52 @@
+# Docker Compose configuration for Volcengine Image Generator (development mode)
+# Usage: docker compose -f docker-compose.dev.yml up --build
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - PYTHON_VERSION=3.11
+    image: volcengine-backend:dev
+    container_name: volcengine-backend-dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DEBUG=true
+    volumes:
+      - ./backend/app:/app/app:ro
+      - ./backend/app/data:/app/data
+      - backend-cache:/root/.cache
+    ports:
+      - "8000:8000"
+    networks:
+      - volcengine-net
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+      args:
+        - NODE_VERSION=20
+        - NGINX_VERSION=1.27-alpine
+    image: volcengine-frontend:dev
+    container_name: volcengine-frontend-dev
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - volcengine-net
+
+volumes:
+  backend-cache:
+    driver: local
+
+networks:
+  volcengine-net:
+    driver: bridge

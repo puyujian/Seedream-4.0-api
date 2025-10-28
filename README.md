@@ -107,6 +107,35 @@ docker-compose up -d
 http://localhost:3000
 ```
 
+### 5. Docker 辅助脚本
+
+仓库在 `scripts/` 目录下提供了一组常用的 Docker 脚本，方便本地构建、测试与清理：
+
+| 脚本 | 功能 |
+|------|------|
+| `./scripts/build.sh` | 构建前后端镜像（使用最新的 Docker Compose 命令自动兼容 V1/V2）。 |
+| `./scripts/build-simple.sh` | 使用缓存快速构建镜像，适合增量调试。 |
+| `./scripts/test-build.sh` | 端到端测试构建流程：构建镜像、启动容器并进行健康检查，结束后自动清理。 |
+| `./scripts/start.sh` | 构建并以后台方式启动所有服务。 |
+| `./scripts/clean.sh` | 交互式清理容器、镜像、数据卷与无用资源。 |
+
+> 脚本会优先使用 `docker-compose`，若系统仅安装 Docker Compose V2 (`docker compose`)，也会自动适配。
+
+### 6. 开发模式（热更新）
+
+如果希望在本地开发时启用热更新，可使用提供的 `docker-compose.dev.yml`：
+
+```bash
+# 启动开发模式（会挂载代码目录并开启后端热重载）
+DOCKER_COMPOSE="docker compose"  # 或 docker-compose
+$DOCKER_COMPOSE -f docker-compose.dev.yml up --build
+```
+
+该配置会：
+
+- 挂载 `backend/app` 代码目录，实现 FastAPI 热重载。
+- 使用与生产相同的构建流程，确保环境一致性。
+- 共享 `backend-cache` 卷，避免重复下载依赖。
 ## 📖 使用指南
 
 ### 文生图
