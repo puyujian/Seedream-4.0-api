@@ -1,83 +1,83 @@
-# 🎨 Volcengine Image Generator
+# 🎨 Volcengine 图像生成器
 
-A complete, production-ready Docker application for AI image generation using Volcengine's Visual Intelligence API. Create stunning images from text descriptions or transform existing images with state-of-the-art AI technology.
+一个完整且可用于生产环境的 Docker 应用，基于火山引擎视觉智能 API 实现 AI 图像生成。你可以通过文字描述创建令人惊艳的图像，也可以利用先进的 AI 技术对现有图片进行转换。
 
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 ![Python](https://img.shields.io/badge/Python-3.11-green)
 ![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-teal)
 
-## ✨ Features
+## ✨ 功能亮点
 
-### 🖼️ Text-to-Image Generation
-- Generate images from detailed text prompts
-- Support for negative prompts to exclude unwanted elements
-- Multiple style presets (Anime, Photographic, Digital Art, etc.)
-- Batch generation (up to 4 images at once)
-- Customizable parameters (size, steps, CFG scale, seed)
+### 🖼️ 文生图
+- 根据详细的文本提示词生成图像
+- 支持反向提示词排除不想要的元素
+- 内置多种风格预设（动漫、摄影、数字艺术等）
+- 支持批量生成（单次最多 4 张）
+- 提供尺寸、步数、CFG scale、随机种子等自定义参数
 
-### 🎨 Image-to-Image Transformation
-- Transform existing images with AI
-- Adjustable transformation strength
-- Style transfer capabilities
-- Same powerful controls as text-to-image
+### 🎨 图生图
+- 对现有图片进行 AI 转换
+- 可调节转换强度
+- 支持风格迁移
+- 拥有与文生图同样强大的控制项
 
-### 📚 History Management
-- Browse all your generated images
-- View generation parameters
-- Download images individually or in bulk
-- Copy prompts for reuse
+### 📚 历史记录管理
+- 浏览所有生成过的图片
+- 查看生成所用参数
+- 支持单张或批量下载
+- 一键复制提示词方便复用
 
-### 💎 Beautiful UI
-- Modern, responsive interface built with Vue 3 and Element Plus
-- Dark theme optimized for visual work
-- Smooth animations and transitions
-- Real-time task progress monitoring
+### 💎 精美界面
+- 采用 Vue 3 与 Element Plus 构建的现代化响应式界面
+- 深色主题，适合视觉创作
+- 流畅的动画与过渡效果
+- 实时监控任务进度
 
-## 🏗️ Architecture
+## 🏗️ 架构
 
 ```
 ┌─────────────────────────────────────────────────┐
-│              Nginx (Port 3000)                  │
-│        Static Files + Reverse Proxy             │
+│              Nginx（端口 3000）                 │
+│         静态资源 + 反向代理                     │
 └──────────────┬──────────────────────────────────┘
                │
        ┌───────┴────────┐
        │                │
 ┌──────▼─────┐   ┌─────▼──────┐
-│  Frontend  │   │   Backend  │
+│  前端应用  │   │   后端服务 │
 │  (Vue 3)   │   │  (FastAPI) │
-│            │   │  Port 8000 │
+│            │   │  端口 8000 │
 └────────────┘   └─────┬──────┘
                        │
                 ┌──────▼──────────┐
-                │  Volcengine API │
-                │  Image Service  │
+                │  火山引擎 API   │
+                │   图像服务      │
                 └─────────────────┘
 ```
 
-## 📋 Prerequisites
+## 📋 前置条件
 
 - Docker 20.10+
 - Docker Compose 2.0+
-- Volcengine account with Visual Intelligence API access (optional for demo mode)
+- 拥有火山引擎账号并开通视觉智能 API（若使用 Demo 模式可选）
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### 1. Clone the Repository
+### 1. 克隆仓库
 
 ```bash
 git clone <repository-url>
 cd volcengine-image-generator
 ```
 
-### 2. Configure Environment
+### 2. 配置环境
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add your Volcengine credentials (optional - works in demo mode without credentials):
+编辑 `.env`，填入火山引擎凭证（可选，没有凭证将以 Demo 模式运行）：
 
 ```env
 VOLCENGINE_ACCESS_KEY=your_access_key_here
@@ -85,105 +85,105 @@ VOLCENGINE_SECRET_KEY=your_secret_key_here
 VOLCENGINE_REGION=cn-beijing
 ```
 
-**Note:** If you don't provide credentials, the application will run in demo mode using placeholder images.
+**提示：** 如果未提供凭证，应用会进入 Demo 模式，使用占位图像进行演示。
 
-### 3. Start the Application
+### 3. 启动应用
 
 ```bash
 docker-compose up -d
 ```
 
-This will:
-- Build the backend service (FastAPI)
-- Build the frontend service (Vue 3)
-- Set up Nginx reverse proxy
-- Start all services
+该命令将会：
+- 构建后端服务（FastAPI）
+- 构建前端服务（Vue 3）
+- 配置 Nginx 反向代理
+- 启动全部服务
 
-### 4. Access the Application
+### 4. 访问应用
 
-Open your browser and navigate to:
+在浏览器中打开：
 
 ```
 http://localhost:3000
 ```
 
-## 📖 Usage Guide
+## 📖 使用指南
 
-### Text-to-Image Generation
+### 文生图
 
-1. Navigate to **Text to Image** page
-2. Enter your prompt (e.g., "A serene mountain landscape at sunset")
-3. Optionally add a negative prompt (e.g., "blurry, low quality")
-4. Adjust parameters:
-   - **Width/Height**: Image dimensions (64-2048px)
-   - **Steps**: Sampling steps (10-100, higher = better quality)
-   - **CFG Scale**: Prompt adherence (1-20, higher = stricter)
-   - **Seed**: For reproducible results (-1 for random)
-   - **Style Preset**: Choose an art style
-   - **Number of Images**: Generate 1-4 images
-5. Click **Generate Image**
-6. Wait for processing (typically 10-30 seconds)
-7. Download or view your generated images
+1. 进入 **Text to Image** 页面
+2. 输入提示词（例如：“夕阳下宁静的山间湖泊”）
+3. 选择性填写反向提示词（例如：“模糊，低质量”）
+4. 调整参数：
+   - **Width/Height**：图像尺寸（64-2048 像素）
+   - **Steps**：采样步数（10-100，数值越高质量越好）
+   - **CFG Scale**：提示词约束力度（1-20，越高越贴合提示词）
+   - **Seed**：随机种子（-1 表示随机）
+   - **Style Preset**：选择艺术风格
+   - **Number of Images**：生成 1-4 张图片
+5. 点击 **Generate Image**
+6. 等待处理完成（通常 10-30 秒）
+7. 下载或查看生成结果
 
-### Image-to-Image Transformation
+### 图生图
 
-1. Navigate to **Image to Image** page
-2. Upload an image (drag & drop or click)
-3. Enter transformation prompt
-4. Adjust **Strength** (0-1, higher = more transformation)
-5. Configure other parameters as needed
-6. Click **Transform Image**
+1. 进入 **Image to Image** 页面
+2. 上传图片（拖拽或点击上传）
+3. 输入转换提示词
+4. 调整 **Strength**（0-1，数值越高变化越大）
+5. 根据需要调整其他参数
+6. 点击 **Transform Image**
 
-### Viewing History
+### 历史记录
 
-1. Navigate to **History** page
-2. Browse all your generated images
-3. Click images to view in full size
-4. Copy prompts or download images
+1. 打开 **History** 页面
+2. 浏览所有生成的图片
+3. 点击图片可查看大图
+4. 复制提示词或下载图片
 
-## 🔧 Configuration
+## 🔧 配置
 
-### Environment Variables
+### 环境变量
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VOLCENGINE_ACCESS_KEY` | Your Volcengine access key | - |
-| `VOLCENGINE_SECRET_KEY` | Your Volcengine secret key | - |
-| `VOLCENGINE_REGION` | API region | `cn-beijing` |
-| `DEFAULT_WIDTH` | Default image width | `512` |
-| `DEFAULT_HEIGHT` | Default image height | `512` |
-| `DEFAULT_STEPS` | Default sampling steps | `20` |
-| `MAX_BATCH_SIZE` | Max images per request | `4` |
-| `MAX_HISTORY_SIZE` | Max history entries | `1000` |
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `VOLCENGINE_ACCESS_KEY` | 火山引擎 Access Key | - |
+| `VOLCENGINE_SECRET_KEY` | 火山引擎 Secret Key | - |
+| `VOLCENGINE_REGION` | API 区域 | `cn-beijing` |
+| `DEFAULT_WIDTH` | 默认图像宽度 | `512` |
+| `DEFAULT_HEIGHT` | 默认图像高度 | `512` |
+| `DEFAULT_STEPS` | 默认采样步数 | `20` |
+| `MAX_BATCH_SIZE` | 单次请求的最大图像数量 | `4` |
+| `MAX_HISTORY_SIZE` | 历史记录上限 | `1000` |
 
-### Custom Port Configuration
+### 自定义端口
 
-Edit `docker-compose.yml` to change ports:
+编辑 `docker-compose.yml` 调整端口：
 
 ```yaml
 services:
   frontend:
     ports:
-      - "8080:80"  # Change 8080 to your preferred port
+      - "8080:80"  # 将 8080 替换为你希望暴露的端口
 ```
 
-## 🛠️ Development
+## 🛠️ 开发指南
 
-### Backend Development
+### 后端开发
 
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`
+API 将运行在 `http://localhost:8000`
 
-API documentation: `http://localhost:8000/docs`
+API 文档地址：`http://localhost:8000/docs`
 
-### Frontend Development
+### 前端开发
 
 ```bash
 cd frontend
@@ -191,138 +191,138 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+前端运行地址：`http://localhost:5173`
 
-## 📚 API Documentation
+## 📚 API 文档
 
-Once the backend is running, visit:
+后端启动后可访问：
 
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+- Swagger UI：`http://localhost:8000/docs`
+- ReDoc：`http://localhost:8000/redoc`
 
-### Key Endpoints
+### 核心端点
 
-- `POST /api/v1/generate/text2image` - Generate image from text
-- `POST /api/v1/generate/image2image` - Transform image
-- `GET /api/v1/tasks/{task_id}` - Check task status
-- `GET /api/v1/tasks/history` - Get generation history
-- `GET /health` - Health check
+- `POST /api/v1/generate/text2image` - 根据文本生成图像
+- `POST /api/v1/generate/image2image` - 基于图像进行转换
+- `GET /api/v1/tasks/{task_id}` - 查询任务状态
+- `GET /api/v1/tasks/history` - 获取生成历史
+- `GET /health` - 健康检查
 
-## 📦 Project Structure
+## 📦 项目结构
 
 ```
 volcengine-image-generator/
-├── backend/                  # FastAPI backend
+├── backend/                  # FastAPI 后端
 │   ├── app/
-│   │   ├── main.py          # Application entry
-│   │   ├── config.py        # Configuration
-│   │   ├── schemas.py       # Pydantic models
-│   │   ├── routers/         # API routes
-│   │   ├── services/        # Business logic
-│   │   └── utils/           # Utilities
+│   │   ├── main.py          # 应用入口
+│   │   ├── config.py        # 配置管理
+│   │   ├── schemas.py       # 数据模型
+│   │   ├── routers/         # API 路由
+│   │   ├── services/        # 业务逻辑
+│   │   └── utils/           # 工具函数
 │   ├── Dockerfile
 │   └── requirements.txt
-├── frontend/                 # Vue 3 frontend
+├── frontend/                 # Vue 3 前端
 │   ├── src/
-│   │   ├── views/           # Pages
-│   │   ├── components/      # Vue components
-│   │   ├── api/             # API client
-│   │   └── styles/          # Styles
+│   │   ├── views/           # 页面
+│   │   ├── components/      # Vue 组件
+│   │   ├── api/             # API 客户端
+│   │   └── styles/          # 样式
 │   ├── Dockerfile
 │   └── package.json
-├── nginx/                    # Nginx configuration
+├── nginx/                    # Nginx 配置
 │   ├── Dockerfile
 │   └── nginx.conf
-├── docs/                     # Documentation
-│   └── RESEARCH_PLAN.md     # Technical design doc
-├── docker-compose.yml        # Docker orchestration
-├── .env.example             # Environment template
+├── docs/                     # 文档
+│   └── RESEARCH_PLAN.md     # 技术方案
+├── docker-compose.yml        # Docker 编排
+├── .env.example             # 环境变量模板
 └── README.md
 ```
 
-## 🔒 Security Considerations
+## 🔒 安全注意事项
 
-- Never commit `.env` file with real credentials
-- Use HTTPS in production
-- Implement rate limiting for public deployments
-- Set appropriate CORS origins in production
-- Consider adding authentication for multi-user deployments
+- 切勿提交包含真实凭证的 `.env` 文件
+- 生产环境务必启用 HTTPS
+- 公网部署建议开启限流
+- 在生产环境配置合适的 CORS 白名单
+- 多用户场景建议增加身份认证
 
-## 🚀 Deployment
+## 🚀 部署
 
-### Production Deployment
+### 生产环境部署
 
-1. Set up a server with Docker and Docker Compose
-2. Clone the repository
-3. Configure production environment variables
-4. Use a production-ready `.env` file
-5. Set up SSL/TLS with Let's Encrypt
-6. Configure firewall rules
-7. Start services:
+1. 准备一台安装了 Docker 与 Docker Compose 的服务器
+2. 克隆仓库
+3. 配置生产环境变量
+4. 使用生产环境 `.env` 文件
+5. 通过 Let's Encrypt 配置 SSL/TLS
+6. 设置防火墙规则
+7. 启动服务：
 
 ```bash
 docker-compose up -d
 ```
 
-### Scaling
+### 扩展能力
 
-For high-traffic deployments:
-- Use Kubernetes for orchestration
-- Add Redis for task queue
-- Implement horizontal scaling for backend
-- Use CDN for static assets
-- Set up load balancing
+面向高并发场景的建议：
+- 使用 Kubernetes 进行编排
+- 引入 Redis 作为任务队列
+- 后端服务水平扩展
+- 静态资源接入 CDN
+- 配置负载均衡
 
-## 🐛 Troubleshooting
+## 🐛 故障排查
 
-### Images Not Generating
+### 无法生成图像
 
-1. Check if Volcengine credentials are correct
-2. Verify API quota/limits
-3. Check backend logs: `docker-compose logs backend`
+1. 检查火山引擎凭证是否正确
+2. 确认 API 配额是否充足
+3. 查看后端日志：`docker-compose logs backend`
 
-### Frontend Not Loading
+### 前端无法访问
 
-1. Check if backend is running: `docker-compose ps`
-2. Verify nginx configuration
-3. Check frontend logs: `docker-compose logs frontend`
+1. 检查后端服务状态：`docker-compose ps`
+2. 核实 Nginx 配置
+3. 查看前端日志：`docker-compose logs frontend`
 
-### Port Conflicts
+### 端口冲突
 
-If port 3000 or 8000 is already in use:
+当 3000 或 8000 端口已被占用时：
 
 ```bash
 docker-compose down
-# Edit docker-compose.yml to change ports
-docker-compose up -d
+# 修改 docker-compose.yml 中的端口
+ docker-compose up -d
 ```
 
-## 📄 License
+## 📄 许可证
 
-This project is provided as-is for educational and commercial use.
+本项目按“现状”提供，可用于教学与商业用途。
 
-## 🙏 Acknowledgments
+## 🙏 致谢
 
-- [Volcengine](https://www.volcengine.com/) for the powerful Image Generation API
-- [FastAPI](https://fastapi.tiangolo.com/) for the excellent backend framework
-- [Vue.js](https://vuejs.org/) for the progressive frontend framework
-- [Element Plus](https://element-plus.org/) for beautiful UI components
+- [Volcengine](https://www.volcengine.com/) 提供强大的图像生成 API
+- [FastAPI](https://fastapi.tiangolo.com/) 带来优秀的后端框架体验
+- [Vue.js](https://vuejs.org/) 提供渐进式前端框架
+- [Element Plus](https://element-plus.org/) 带来优雅的 UI 组件
 
-## 📞 Support
+## 📞 支持
 
-For issues, questions, or contributions:
-- Open an issue on GitHub
-- Check the [Research Plan](docs/RESEARCH_PLAN.md) for technical details
-- Review API documentation at `/docs` endpoint
+如需寻求支持或参与贡献：
+- 在 GitHub 上提交 Issue
+- 查阅 [调研方案](docs/RESEARCH_PLAN.md) 获取更多技术细节
+- 查看后端 `/docs` 端点的 API 文档
 
-## 🎉 Contributing
+## 🎉 贡献指南
 
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+欢迎任何形式的贡献！请按照以下流程：
+1. Fork 仓库
+2. 创建功能分支
+3. 完成修改
+4. 提交 Pull Request
 
 ---
 
-**Built with ❤️ for the AI art community**
+**怀着对 AI 艺术社区的热爱而构建 ❤️**
