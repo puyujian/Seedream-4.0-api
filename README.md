@@ -279,7 +279,29 @@ volcengine-image-generator/
 
 ## 🚀 部署
 
-### 生产环境部署
+### 使用已发布的 Docker 镜像（推荐）
+
+我们通过 GitHub Actions 自动构建并发布 Docker 镜像到 GitHub Container Registry。
+
+```bash
+# 1. 下载最新版本的 docker-compose 配置
+curl -O https://github.com/<your-username>/<your-repo>/releases/latest/download/docker-compose.release.yml
+mv docker-compose.release.yml docker-compose.yml
+
+# 2. 下载环境变量模板
+curl -O https://github.com/<your-username>/<your-repo>/releases/latest/download/.env.example
+mv .env.example .env
+
+# 3. 编辑 .env 文件，填入火山引擎凭证（可选）
+nano .env
+
+# 4. 启动服务
+docker-compose up -d
+```
+
+查看所有可用版本：[Releases](https://github.com/<your-username>/<your-repo>/releases)
+
+### 从源码构建部署
 
 1. 准备一台安装了 Docker 与 Docker Compose 的服务器
 2. 克隆仓库
@@ -343,6 +365,20 @@ docker-compose down
 - 在 GitHub 上提交 Issue
 - 查阅 [调研方案](docs/RESEARCH_PLAN.md) 获取更多技术细节
 - 查看后端 `/docs` 端点的 API 文档
+
+## 📦 发布与 CI/CD
+
+本项目使用 GitHub Actions 自动化构建和发布流程：
+
+- 📖 [发布指南](RELEASE_GUIDE.md) - 详细的版本发布步骤
+- 🔧 [GitHub Actions 工作流文档](.github/workflows/README.md) - 工作流技术细节
+- 🏷️ [查看所有发布版本](https://github.com/<your-username>/<your-repo>/releases)
+
+**发布新版本**：
+```bash
+git tag -a v1.0.0 -m "Release version 1.0.0"
+git push origin v1.0.0
+```
 
 ## 🎉 贡献指南
 
