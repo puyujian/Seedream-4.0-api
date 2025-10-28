@@ -62,7 +62,51 @@
 - Docker Compose 2.0+
 - 拥有火山引擎账号并开通视觉智能 API（若使用 Demo 模式可选）
 
+## 🎯 部署方式选择
+
+本项目提供两种部署方式：
+
+| 方式 | 特点 | 适用场景 |
+|------|------|---------|
+| **全栈单镜像** 🆕 | ⭐ 最简单，一个容器运行 | 个人项目、开发测试、快速部署 |
+| **分离式架构** | 可扩展，前后端独立 | 生产环境、大规模应用 |
+
+👉 **新手推荐**：使用全栈单镜像，只需一条命令即可启动！  
+📖 详细对比：[部署方式选择指南](DEPLOYMENT_OPTIONS.md)
+
 ## 🚀 快速开始
+
+> **📦 新增：全栈单镜像版本** - 如果您想要最简单的部署方式，只运行一个镜像就能使用完整应用，请查看 [全栈单镜像文档](README.fullstack.md) 或直接使用：
+> ```bash
+> ./scripts/start-fullstack.sh
+> ```
+
+### 方式一：全栈单镜像（推荐，最简单）
+
+1. **克隆仓库并配置**
+```bash
+git clone <repository-url>
+cd volcengine-image-generator
+cp .env.example .env
+# 编辑 .env 填入凭证（可选）
+```
+
+2. **一键启动**
+```bash
+./scripts/start-fullstack.sh
+```
+
+3. **访问应用**
+```
+http://localhost:3000
+```
+
+✅ 优点：只需一个容器，部署最简单  
+📖 详细文档：[README.fullstack.md](README.fullstack.md)
+
+---
+
+### 方式二：分离式架构（适合生产环境扩展）
 
 ### 1. 克隆仓库
 
@@ -113,10 +157,12 @@ http://localhost:3000
 
 | 脚本 | 功能 |
 |------|------|
-| `./scripts/build.sh` | 构建前后端镜像（使用最新的 Docker Compose 命令自动兼容 V1/V2）。 |
+| `./scripts/start-fullstack.sh` | 🆕 构建并启动全栈单镜像版本（推荐）。 |
+| `./scripts/test-fullstack.sh` | 🆕 测试全栈单镜像的构建和运行。 |
+| `./scripts/build.sh` | 构建前后端分离镜像（使用最新的 Docker Compose 命令自动兼容 V1/V2）。 |
 | `./scripts/build-simple.sh` | 使用缓存快速构建镜像，适合增量调试。 |
 | `./scripts/test-build.sh` | 端到端测试构建流程：构建镜像、启动容器并进行健康检查，结束后自动清理。 |
-| `./scripts/start.sh` | 构建并以后台方式启动所有服务。 |
+| `./scripts/start.sh` | 构建并以后台方式启动所有服务（分离式架构）。 |
 | `./scripts/clean.sh` | 交互式清理容器、镜像、数据卷与无用资源。 |
 
 > 脚本会优先使用 `docker-compose`，若系统仅安装 Docker Compose V2 (`docker compose`)，也会自动适配。
