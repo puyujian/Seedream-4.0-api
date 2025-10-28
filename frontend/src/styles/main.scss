@@ -1,0 +1,26 @@
+@use 'sass:color';
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.dark-theme {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.light-theme {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+#app {
+  min-height: 100vh;
+}
